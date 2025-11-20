@@ -1,43 +1,57 @@
-# Tienda Online Spring Boot
+# 🛒 Tienda Online Spring Boot
 
-API REST para una tienda online desarrollada con Spring Boot, Spring Security y JWT.
+Aplicación de comercio electrónico desarrollada con Spring Boot 3.x, Spring Security, JWT y H2 Database.
 
-## Tecnologías
+## 🚀 Tecnologías
 
 - Java 21
 - Spring Boot 3.5.7
 - Spring Security
-- JWT
+- JWT (JSON Web Tokens)
 - Spring Data JPA
 - H2 Database
 - Lombok
 - Maven
 
-## Requisitos
+## 📋 Requisitos Previos
 
 - JDK 21 o superior
 - Maven 3.6+
 
-## Configuración
+## ⚙️ Configuración
 
-La aplicación usa H2 como base de datos en memoria. La configuración está en `application.properties`.
+La aplicación usa H2 como base de datos en memoria. La configuración está en `application.properties`:
 
-## Ejecutar la aplicación
-
-```bash
-./mvnw.cmd spring-boot:run
+```properties
+spring.datasource.url=jdbc:h2:mem:tiendadb
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
 ```
 
-La aplicación estará disponible en `http://localhost:8080`
+## 🏃 Ejecutar la Aplicación
 
-## Acceso a H2 Console
+```bash
+mvnw spring-boot:run
+```
 
-- URL: `http://localhost:8080/h2-console`
+O en Windows:
+```bash
+mvnw.cmd spring-boot:run
+```
+
+La aplicación estará disponible en: `http://localhost:8080`
+
+## 🗄️ Acceso a H2 Console
+
+URL: `http://localhost:8080/h2-console`
+
 - JDBC URL: `jdbc:h2:mem:tiendadb`
 - Usuario: `sa`
-- Contraseña: (vacío)
+- Contraseña: (dejar vacío)
 
-## Usuarios precargados
+## 👥 Usuarios Precargados
+
+La aplicación carga automáticamente 5 usuarios:
 
 | ID | Nombre | Correo | Contraseña |
 |----|--------|--------|-----------|
@@ -47,36 +61,46 @@ La aplicación estará disponible en `http://localhost:8080`
 | 4 | Sofía Martínez | sofia.martinez@email.com | Clave987 |
 | 5 | Diego Fernández | diego.fernandez@email.com | Contra654 |
 
-## Datos iniciales
+## 📊 Datos Iniciales
 
-La aplicación carga automáticamente:
 - 5 Usuarios
 - 5 Categorías (Electrónica, Ropa, Hogar, Deportes, Libros)
-- 50 Productos
+- 50 Productos (10 por categoría)
 - 50 Comentarios
 
-## Endpoints
+## 🔐 Endpoints
 
 ### Públicos (sin autenticación)
 
-**Login**
-```
+#### 1. Login
+```http
 POST /auth/login
 Content-Type: application/json
 
 {
-  "correoElectronico": "juan.perez@email.com",
-  "contrasena": "Qwerty123"
+  "correoElectronico": "juan@email.com",
+  "contrasena": "password123"
 }
 ```
 
-**Productos con bajo stock**
+Respuesta:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tipo": "Bearer",
+  "idUsuario": 1,
+  "nombre": "Juan Pérez",
+  "correoElectronico": "juan@email.com"
+}
 ```
+
+#### 2. Productos con Bajo Stock
+```http
 GET /productos/bajo-stock?x=15
 ```
 
-**Comentarios desde una fecha**
-```
+#### 3. Comentarios desde una Fecha
+```http
 GET /comentarios/desde?fecha=2025-05-10
 ```
 
@@ -87,51 +111,98 @@ Incluir el token en el header:
 Authorization: Bearer {token}
 ```
 
-**Crear carrito**
-```
+#### 4. Crear Carrito
+```http
 POST /carrito
+Authorization: Bearer {token}
 ```
 
-**Agregar producto al carrito**
-```
+#### 5. Agregar Producto al Carrito
+```http
 POST /carrito/{idCarrito}/agregar-producto/{idProducto}
+Authorization: Bearer {token}
 ```
 
-**Obtener productos del carrito**
-```
+#### 6. Obtener Productos del Carrito
+```http
 GET /carrito/{idCarrito}/productos
+Authorization: Bearer {token}
 ```
 
-## Estructura del proyecto
+## 📦 Estructura del Proyecto
 
 ```
 src/main/java/com/tienda/
-├── config/              - Configuraciones
-├── controller/          - Controladores REST
-├── dto/                 - Data Transfer Objects
-├── entity/              - Entidades JPA
-├── repository/          - Repositorios
-├── security/            - Seguridad y JWT
-└── service/             - Servicios
+├── config/              # Configuraciones (Security, DataLoader)
+├── controller/          # Controladores REST
+├── dto/                 # Data Transfer Objects
+├── entity/              # Entidades JPA
+├── repository/          # Repositorios JPA
+├── security/
+│   ├── jwt/            # Utilidades JWT y filtros
+│   └── service/        # UserDetailsService
+└── service/
+    └── impl/           # Implementaciones de servicios
 ```
 
-## Probar con Postman
+## 🧪 Probar con Postman
 
-1. Importar el archivo `Tienda-Online-Postman-Collection.json`
-2. Hacer login para obtener el token
-3. Usar el token en los endpoints privados
+### Paso 1: Login
+1. POST a `http://localhost:8080/auth/login`
+2. Body (JSON):
+```json
+{
+  "correoElectronico": "juan.perez@email.com",
+  "contrasena": "Qwerty123"
+}
+```
+3. Copiar el `token` de la respuesta
 
-## Características
+### Paso 2: Crear Carrito
+1. POST a `http://localhost:8080/carrito`
+2. Headers: `Authorization: Bearer {token}`
+3. Copiar el `idCarrito` de la respuesta
 
-- Autenticación con JWT
-- Contraseñas encriptadas con BCrypt
-- Gestión de carritos de compra
-- Control automático de stock
-- Cálculo automático de impuestos (19%)
-- Validación de pertenencia de recursos
+### Paso 3: Agregar Producto
+1. POST a `http://localhost:8080/carrito/1/agregar-producto/1`
+2. Headers: `Authorization: Bearer {token}`
 
-## Notas
+### Paso 4: Ver Productos del Carrito
+1. GET a `http://localhost:8080/carrito/1/productos`
+2. Headers: `Authorization: Bearer {token}`
+
+## 🔒 Seguridad
+
+- Las contraseñas se encriptan con BCrypt
+- JWT con expiración de 24 horas
+- Endpoints protegidos requieren autenticación
+- Validación de permisos en operaciones de carrito
+
+## 💡 Características Principales
+
+- ✅ Autenticación JWT
+- ✅ Gestión de productos con stock
+- ✅ Sistema de comentarios
+- ✅ Carrito de compras con cálculo automático de impuestos (19%)
+- ✅ Validación de pertenencia de carrito al usuario
+- ✅ Descuento automático de stock al agregar productos
+- ✅ Datos de prueba precargados
+
+## 📝 Notas
 
 - La base de datos H2 es en memoria, los datos se pierden al reiniciar
-- El token JWT expira en 24 horas
+- El impuesto aplicado es del 19% sobre el subtotal
+- Al agregar un producto al carrito, el stock se reduce automáticamente
 - Solo el propietario del carrito puede modificarlo
+
+## 🐛 Solución de Problemas
+
+Si tienes problemas al ejecutar:
+
+1. Verifica que tienes Java 21 instalado: `java -version`
+2. Limpia el proyecto: `mvnw clean install`
+3. Verifica que el puerto 8080 esté disponible
+
+## 📄 Licencia
+
+Este proyecto es de código abierto y está disponible bajo la licencia MIT.
